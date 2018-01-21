@@ -257,9 +257,15 @@ sub zfs_update {
 		if($pool) {
 			my @zpool;
 
-			$free = trim(`zfs get -rHp -o value available $pool`);
-			$udata = trim(`zfs get -rHp -o value used $pool`);
-			$usnap = trim(`zfs get -rHp -o value usedbysnapshots $pool`);
+			$free = trim(`zfs get -Hp -o value available $pool`);
+			$udata = trim(`zfs get -Hp -o value used $pool`);
+			$usnap = `zfs get -rHp -o value usedbysnapshots $pool`;
+			my $sum = 0;
+			for (split /\n/, $usnap) {
+				$sum += $_ if /^\d+$/;
+			}
+			$usnap = $sum;
+
 			@zpool = split(' ', `zpool list -H $pool` || "");
 
 			if(scalar(@zpool) == 10) {	# ZFS version 0.6.4+
